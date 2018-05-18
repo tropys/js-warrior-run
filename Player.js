@@ -17,8 +17,12 @@ class Player {
     const {currentHealth, isHurt, isTakingDamage} = this.status(warrior);
     this.health = currentHealth;
 
-    if (warrior.feel().isUnit())
+    if (warrior.feel().isUnit()) {
+      const unit = warrior.feel().getUnit();
+      if (unit.isFriendly() && unit.isBound())
+        return warrior.rescue();
       return warrior.attack();
+    }
 
     if (isHurt && !isTakingDamage)
       return warrior.rest();
