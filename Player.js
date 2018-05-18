@@ -1,3 +1,9 @@
+
+// run all Senses each turn
+// remember all turns
+
+// scoring heuristic?
+
 class Player {
   constructor() {
     this.health = undefined;
@@ -13,9 +19,14 @@ class Player {
   playTurn(warrior) {
     if (!this.health)
       this.health = warrior.health();
-
     const {currentHealth, isHurt, isTakingDamage} = this.status(warrior);
     this.health = currentHealth;
+
+    //-----------
+
+    if (warrior.feel().isStairs()) {
+        return warrior.walk();
+    }
 
     if (warrior.feel().isUnit()) {
       const unit = warrior.feel().getUnit();
@@ -26,6 +37,9 @@ class Player {
 
     if (isHurt && !isTakingDamage)
       return warrior.rest();
+
+    if (isTakingDamage && this.health <= 10)
+      return warrior.walk('backward');
 
     warrior.walk();
   }
