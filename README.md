@@ -1,18 +1,19 @@
-## Umetron - beginner - level 1
+## Umetron - beginner - level 2
 
-### _You see before yourself a long hallway with stairs at the end. There's nothing in the way._
+### _It's too dark to see anything, but you smell sludge nearby._
 
-> **TIP:** Call `warrior.walk()` to walk forward in the Player's `playTurn` method.
+> **TIP:** Use `warrior.feel().isUnit()` to see if there's anything in front of you, and `warrior.attack()` to fight it. Remember, you can only do one action per turn.
 
 
 ### Floor Map
 
 ```
 ╔════════╗
-║@      >║
+║@   s  >║
 ╚════════╝
 
 @ = Umetron (20 HP)
+s = Sludge (12 HP)
 > = stairs
 ```
 
@@ -20,10 +21,12 @@
 
 #### Actions (only one per turn)
 
+* `warrior.attack()`: Attack a unit in the given direction (forward by default) dealing 5 HP of damage.
 * `warrior.walk()`: Move one space in the given direction (forward by default).
 
 #### Senses
 
+* `warrior.feel()`: Return the adjacent space in the given direction (forward by default).
 * `warrior.think()`: Think about your options before choosing an action.
 
 ### Next Steps
