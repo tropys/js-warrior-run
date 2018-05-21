@@ -13,6 +13,8 @@ const initialHealth = 20;
 
 const wallInDirection = (walls, dirToCheck) => walls.some(([dir, space]) => dir === dirToCheck);
 
+const recollectLastTurn = (memory) => memory[memory.length - 1];
+
 const oppositeDirection = direction => {
   switch(direction) {
     case FORWARD:
@@ -30,15 +32,23 @@ const oppositeDirection = direction => {
 
 class Player {
   constructor() {
-    this.health = initialHealth;
-    this.mode = BACKWARD;
+    this.mode = FORWARD;
+    this.memory = [{
+      status: {
+        turn: 0,
+        health: initialHealth,
+        isTakingDamage: false,
+        isHurt: false
+      }
+    }];
   }
 
-  status(warrior) {
-    const currentHealth = warrior.health();
-    const isTakingDamage = currentHealth < this.health;
+  status(warrior, lastTurn) {
+    const {status: prevStatus} = lastTurn;
+    const health = warrior.health();
+    const isTakingDamage = health < prevStatus.health;
     const isHurt = warrior.health() < initialHealth;
-    return {currentHealth, isTakingDamage, isHurt};
+    return {turn: ++prevStatus.turn, health, isTakingDamage, isHurt};
   }
 
   sense(warrior) {
@@ -61,36 +71,52 @@ class Player {
     }
   }
 
-  playTurn(warrior) {
-    const {currentHealth, isHurt, isTakingDamage} = this.status(warrior);
-    this.health = currentHealth;
+  planAndAct(warrior, status, sensed) {
+    const {health, isHurt, isTakingDamage} = status;
+    const {stairs, walls, enemys, friends} = sensed;
 
-    const {stairs, walls, enemys, friends} = this.sense(warrior);
+    warrior.think(`about turn ${status.turn}`)
 
+    // enemys can block stairs so they sometimes have to be cleared before
     if (enemys.length > 0) {
-      // enemys can block stairs so they sometimes have to be cleared before
+      warrior.think('about attacking');
       return warrior.attack(enemys[0][0]);
     }
 
     if (stairs.length > 0) {
+      warrior.think('about taking the stairs');
       return warrior.walk(stairs[0][0]);
     }
 
     if (friends.length > 0) {
+      warrior.think('about rescuing a friend');
       return warrior.rescue(friends[0][0]);
     }
 
-    if (isHurt && !isTakingDamage)
+    if (isHurt && !isTakingDamage) {
+      warrior.think('about resting');
       return warrior.rest();
-
-    if (isTakingDamage && this.health <= 10)
-      // back off one step
+    }
+    // back off one step
+    if (isTakingDamage && health <= 10) {
+      warrior.think(`turning away from ${this.mode}`);
       return warrior.walk(oppositeDirection(this.mode));
-
+    }
     if (wallInDirection(walls, this.mode)) {
-      this.mode = oppositeDirection(this.mode);
+      warrior.think(`turning away from ${this.mode}`);
+      return warrior.pivot(oppositeDirection(this.mode));
     }
 
+    warrior.think(`walking ${this.mode}`);
     return warrior.walk(this.mode);
+  }
+
+  playTurn(warrior) {
+    const lastTurn = recollectLastTurn(this.memory);
+    const sensed = this.sense(warrior);
+    const status = this.status(warrior, lastTurn);
+    this.planAndAct(warrior, status, sensed);
+
+    this.memory.push({status, sensed});
   }
 }
