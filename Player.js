@@ -48,7 +48,8 @@ class Player {
     const health = warrior.health();
     const isTakingDamage = health < prevStatus.health;
     const isHurt = warrior.health() < initialHealth;
-    return {turn: ++prevStatus.turn, health, isTakingDamage, isHurt};
+    const turn = prevStatus.turn++;
+    return {turn, health, isTakingDamage, isHurt};
   }
 
   sense(warrior) {
@@ -63,12 +64,7 @@ class Player {
     const enemys = units.filter(([dir, unit]) => unit.isHostile());
     const friends = units.filter(([dir, unit]) => unit.isFriendly());
 
-    return {
-      stairs,
-      walls,
-      enemys,
-      friends
-    }
+    return {stairs, walls, enemys, friends}
   }
 
   planAndAct(warrior, status, sensed) {
